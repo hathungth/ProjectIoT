@@ -13,6 +13,9 @@ const int DHTPIN = 14;
 const int DHTTYPE = DHT11;
 DHT dht(DHTPIN, DHTTYPE);
 
+//buzzer
+const int buzzer = 12;
+
 // Variables for timing
 uint32_t tsLastReport = 0;
 uint32_t tsLastDHTReport = 0;

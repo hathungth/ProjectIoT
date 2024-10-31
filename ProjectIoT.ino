@@ -2,234 +2,229 @@
 #define BLYNK_TEMPLATE_ID ""
 #define BLYNK_TEMPLATE_NAME "Health Monitoring"
 #define BLYNK_AUTH_TOKEN ""
+
 #define BLYNK_PRINT Serial
 #include <Blynk.h>
-
+#include <BlynkSimpleEsp32.h>
+#include <WiFi.h>
 #include <Wire.h>
-
-//Sensors
 #include "MAX30100_PulseOximeter.h"
-#include "DHT.h"
-
-//For ESP8266
-#include <ESP8266WiFi.h>
-#include <BlynkSimpleEsp8266.h>
-
-//For ESP32
-//#include <WiFi.h>
-//#include <WiFiClient.h>
-//#include <BlynkSimpleEsp32.h>
-
-//Firebase
+#include <DHT.h>
 #include <Firebase_ESP_Client.h>
+
 // Firebase configuration
-#define FIREBASE_HOST "" // Replace with your Firebase database URL
-#define FIREBASE_AUTH ""      // Replace with your Firebase secret
+#define FIREBASE_HOST ""
+#define FIREBASE_AUTH ""
 
 // Firebase objects
 FirebaseData firebaseData;
 FirebaseConfig firebaseConfig;
 FirebaseAuth firebaseAuth;
-#define REPORTING_PERIOD_MS     1000  //khoang thoi gian giua cac lan do: 1s
-#define DHT_PERIOD_MS           1000  // DHT11 requires a 1-2s interval between readings
 
-//Wifi
-char ssid[] = "ThuHa";
-char pass[] = "thuha1707";
+// MAX30100 Pulse Oximeter object
+PulseOximeter pox;
+BlynkTimer timer;
+// DHT11 Sensor setup
+#define DHTPIN 14              // Pin where the DHT11 is connected
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+//buzzer
+const int buzzer = 12; //D6
+// WiFi credentials
+const char* ssid = "ThuHa";
+const char* password = "thuha1707";
 
-float BPM,SpO2;
-float h,t,f;
-float lastBPM = 0;
-float lastSpO2 = 0;
+// Variables for data
+float heartRate, spo2, t, h;
+float lastBPM,lastspo2,lastt,lasth;
+float BPM1=0;
+float SpO21=0;
+unsigned long tsLastReport = 0;
+unsigned long tsLastDHTReport = 0;
+const unsigned long firebaseSendInterval = 1000;
+unsigned long lastFirebaseSendTime = 0;
+unsigned long lastblynkSendTime =0;
 
 void myTimerEvent()
 {
-  // You can send any value at any time.
-  // Please don't send more that 10 values per second.
-  Blynk.virtualWrite(V0, millis() / 1000);
+// You can send any value at any time.
+// Please don't send more that 10 values per second.
+Blynk.virtualWrite(V0, millis() / 1000);
 }
 
-// Create a PulseOximeter object
-// Connections : SCL PIN - D1 , SDA PIN - D2 , INT PIN - D0
-PulseOximeter pox; //Khởi tạo đối tượng PulseOximeter
-
-// DHT11
-const int DHTPIN = 14;
-const int DHTTYPE = DHT11;
-DHT dht(DHTPIN, DHTTYPE);
-
-//buzzer
-const int buzzer = 12; //D6
-
-// Variables for timing
-uint32_t tsLastReport = 0; //Biến để theo dõi thời gian báo cáo
-uint32_t tsLastDHTReport = 0;
-BlynkTimer timer;
-
-// Callback routine executed when a pulse is detected
-void onBeatDetected() 
-{
-    Serial.println("♥ Beat!");
+void onBeatDetected() {
+  Serial.println("♥ Beat!");
 }
 
-void setup() 
-{
+void setup() {
   Serial.begin(115200);
   pinMode(buzzer, OUTPUT); 
-  
   // Initialize WiFi
-  WiFi.begin(ssid, pass);
-  while (WiFi.status() != WL_CONNECTED) 
-  {
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.println("Connecting to WiFi...");
   }
   Serial.println("Connected to WiFi!");
-
-  //DHT
-  dht.begin();
-
-  //BLYNK
-  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, password);
   timer.setInterval(1000L, myTimerEvent);
-
-  //Max30100
-  Serial.print("Initializing pulse oximeter...");
-  // Initialize MAX30100 sensor
-  if (!pox.begin()) //khởi tạo MAX30100 ko thanh cong (pox.begin la ma khoi tao MAX30100)
-  {
+  // Initialize MAX30100 Pulse Oximeter
+  if (!pox.begin()) {
     Serial.println("Failed to initialize MAX30100 sensor.");
-    while (1); //vong lap vo han -->phai reset lai chuong trinh 
-  } else  // khoi tao thanh cong
-  {
-    Serial.println("MAX30100 initialized!");
+    while (1);
   }
-  
-  // Configure MAX30100 sensor LED current
+  Serial.println("MAX30100 initialized!");
+  pox.setOnBeatDetectedCallback(onBeatDetected);
   pox.setIRLedCurrent(MAX30100_LED_CURR_7_6MA);
-  // Register callback for heartbeat detection
-  pox.setOnBeatDetectedCallback(onBeatDetected); //goi ham onBeatDetected khi phát hiện nhịp tim
+  // Initialize DHT11
+  dht.begin();
+  Serial.println("DHT11 initialized!");
   // Firebase configuration
   firebaseConfig.database_url = FIREBASE_HOST;
-  firebaseConfig.signer.tokens.legacy_token = FIREBASE_AUTH;  // Use Firebase Database Secret
-
+  firebaseConfig.signer.tokens.legacy_token = FIREBASE_AUTH;
   // Initialize Firebase
   Firebase.begin(&firebaseConfig, &firebaseAuth);
-  Firebase.reconnectWiFi(true);  // Automatically reconnect WiFi when disconnected
+  Firebase.reconnectWiFi(true);
+  // Create tasks for dual-task operation
+  xTaskCreatePinnedToCore(readSensors, "Sensor Task", 4096, NULL, 1, NULL, 0); // Run on core 0
+  xTaskCreatePinnedToCore(sendDataToFirebase, "Firebase Task", 8192, NULL, 1, NULL, 1); // Increased stack size to 8192 and run on core 1
 }
 
-void loop() 
-{
-    // Update MAX30100 sensor readings
+// Task 1: Reads data from sensors every 2 seconds
+void readSensors(void *parameter) {
+  for (;;) {
     pox.update();
-
-    //Blynk
-    Blynk.run();
-    timer.run();
-
-    // Report Heart Rate and SpO2 every 1 second
-    if (millis() - tsLastReport > REPORTING_PERIOD_MS) // kiem tra du thoi gian giua cac khoang do
-    {
-      BPM = pox.getHeartRate();
-      SpO2 = pox.getSpO2();
-      if (BPM>0 && SpO2>0)
-      {
+    // Update the heart rate and SpO2 every 1 seconds
+    if (millis() - tsLastReport > 3000) {
+      BPM1 = pox.getHeartRate();
+      SpO21 = pox.getSpO2();
+      
+      if (BPM1 > 0 && SpO21 > 0) {
         Serial.print("Heart rate: ");
-        Serial.print(BPM);
-        Serial.print(" bpm / SpO2: ");
-        Serial.print(SpO2);
+        Serial.print(BPM1);
+        Serial.print(" bpm, SpO2: ");
+        Serial.print(SpO21);
         Serial.println(" %");
-
-        Blynk.virtualWrite(V1, BPM);
-        Blynk.virtualWrite(V2, SpO2);
-
-        // Push heart rate to Firebase
-        if (Firebase.RTDB.setFloat(&firebaseData, "Maxdata/heartrate", BPM)) 
-        {
-          Serial.println("Heart rate data pushed to Firebase successfully!");
-        } else 
-        {
-          Serial.print("Failed to push heart rate data: ");
-          Serial.println(firebaseData.errorReason());
-        }
-        
-        // Push SpO2 to Firebase
-        if (Firebase.RTDB.setFloat(&firebaseData, "Maxdata/spo2", SpO2)) 
-        {
-          Serial.println("SpO2 data pushed to Firebase successfully!");
-        } else 
-        {
-          Serial.print("Failed to push SpO2 data: ");
-          Serial.println(firebaseData.errorReason());
-        }
-      } else 
-      {
-        Serial.println("No valid readings from MAX30100.");
+      } else {
+        Serial.println("Invalid sensor readings.");
       }
       tsLastReport = millis();
     }
 
-    // Read and report DHT11 sensor data every 2 seconds
-    if (millis() - tsLastDHTReport > DHT_PERIOD_MS) 
-    {
-      h = dht.readHumidity();    // Read humidity
-      t = dht.readTemperature(); // Read temperature in degrees Celsius
-      if (isnan(t) || isnan(h)) 
-      {
+    if (millis() - tsLastDHTReport > 2000) {
+      // Read temperature and humidity from the DHT11 sensor every 1 seconds
+      t = dht.readTemperature();
+      h = dht.readHumidity();
+      if (isnan(t) || isnan(h)) {
         Serial.println("Failed to read from DHT sensor!");
-      } 
-      else 
-      {
-        Serial.print("Humidity: ");
-        Serial.print(h);
-        Serial.print(" %\t");
+      } else {
         Serial.print("Temperature: ");
         Serial.print(t);
-        Serial.println(" *C ");
+        Serial.print(" °C, Humidity: ");
+        Serial.print(h);
+        Serial.println(" %");
+      }
+      tsLastDHTReport = millis();
+      }
+  }
+}
 
-        //BLYNK
-        Blynk.virtualWrite(V3, t);
-        Blynk.virtualWrite(V4, h);
-        
-        // Push temperature to Firebase
-        if (Firebase.RTDB.setFloat(&firebaseData, "DHTdata/temperature", t)) 
-        {
-          Serial.println("Temperature data pushed to Firebase successfully!");
-        } else 
-        {
-          Serial.print("Failed to push temperature data: ");
+// Task 2: Pushes data to Firebase every 5 seconds
+void sendDataToFirebase(void *parameter) {
+  for (;;) {
+    Blynk.run();
+    timer.run();
+    heartRate=BPM1;
+    spo2=SpO21;
+    float humi2 = h;
+    float temp2 = t;
+    if (millis() - lastFirebaseSendTime > firebaseSendInterval) {
+      // Check if valid data is available for each sensor
+      if (heartRate > 0 && spo2 > 0) {
+        if (Firebase.RTDB.setFloat(&firebaseData, "PhuongsensorData/heartRate", heartRate)) {
+          Serial.println("Heart rate data pushed to Firebase successfully!");
+        } else {
+          Serial.print("Failed to push heart rate data: ");
           Serial.println(firebaseData.errorReason());
         }
-        // Push humidity to Firebase
-        if (Firebase.RTDB.setFloat(&firebaseData, "DHTdata/humidity", h)) 
-        {
-          Serial.println("Humidity data pushed to Firebase successfully!");
-        } else 
-        {
-          Serial.print("Failed to push humidity data: ");
+
+        if (Firebase.RTDB.setFloat(&firebaseData, "PhuongsensorData/spo2", spo2)) {
+          Serial.println("SpO2 data pushed to Firebase successfully!");
+        } else {
+          Serial.print("Failed to push SpO2 data: ");
           Serial.println(firebaseData.errorReason());
         }
       }
 
-      tsLastDHTReport = millis();
-    }
+      // Push temperature and humidity to Firebase if available
 
-    // canh bao
-    if ((BPM<60 || BPM>100 || SpO2<95 || t>37 || t<16 || h<30 || h>70) && (BPM>0 && SpO2>0 && t >0 && h>0))
+      if (!isnan(temp2) && !isnan(humi2)) {
+        if (Firebase.RTDB.setFloat(&firebaseData, "PhuongDHTdata/temperature", temp2)) {
+          Serial.println("Temperature data pushed to Firebase successfully!");
+        } else {
+          Serial.print("Failed to push temperature data: ");
+          Serial.println(firebaseData.errorReason());
+        }
+        if (Firebase.RTDB.setFloat(&firebaseData, "PhuongDHTdata/humidity", humi2)) {
+          Serial.println("Humidity data pushed to Firebase successfully!");
+        } else {
+          Serial.print("Failed to push humidity data: ");
+          Serial.println(firebaseData.errorReason());
+        }
+      }
+      lastFirebaseSendTime = millis();
+    }
+    if (millis() - lastblynkSendTime > 2000)
+    {
+      if (heartRate>0&& spo2>0)
+      {
+        if (heartRate!=lastBPM) 
+          {
+            Blynk.virtualWrite(V1, heartRate);
+            lastBPM=heartRate;
+          }
+          delay(100);
+          if (spo2!=lastspo2) 
+          {
+            Blynk.virtualWrite(V2, spo2);
+            lastspo2=spo2;
+          }
+          delay(100);
+        if (temp2!=lastt) 
+        {
+          Blynk.virtualWrite(V3, temp2);
+          lastt=temp2;
+        }
+        delay(100);
+        if (humi2!=lasth) 
+        {
+          Blynk.virtualWrite(V4, humi2);
+          lasth=humi2;
+        }
+        delay(100);
+      }
+      lastblynkSendTime=millis();
+    }
+    if ((heartRate<60 || heartRate>100 || spo2<95 || temp2>37 || temp2<16 || humi2<30 || humi2>70) && (heartRate>0 && spo2>0 && temp2 >0 && humi2>0))
     {
       digitalWrite(buzzer,HIGH);///*
       static unsigned long lastAlertTime = 0;
       if (millis() - lastAlertTime > 5000) 
       {
       //canh bao nhip tim
-      if(BPM<60) Blynk.logEvent("slow_heart_rate", String("Slow heart rate: ") + BPM);
-      if (BPM>100) Blynk.logEvent("high_heart_rate", String("High heart rate: ") + BPM);
+      if(heartRate<60) Blynk.logEvent("slow_heart_rate", String("Slow heart rate: ") + heartRate);
+      delay(100);
+      if (heartRate>100) Blynk.logEvent("high_heart_rate", String("High heart rate: ") + heartRate);
+      delay(100);
       //canh bao SpO2
-      if(SpO2<95) Blynk.logEvent("low_spo2", String("Low SpO2: ") + SpO2);
+      if(spo2<95) Blynk.logEvent("low_spo2", String("Low SpO2: ") + spo2);
+      delay(100);
       //canh bao nhiet do
-      if(t>37 || t<15) Blynk.logEvent("dangerous_temperature", String("Dangerous TemperatureDetected!: ") + t);
+      if(temp2>37 || temp2<15) Blynk.logEvent("dangerous_temperature", String("Dangerous TemperatureDetected!: ") + temp2);
+      delay(100);
       // canh bao do am
-      if (h>70 || h<30) Blynk.logEvent("dangerous_humidity", String("Dangerous Humidity: ") + h);
+      if (humi2>70 || humi2<30) Blynk.logEvent("dangerous_humidity", String("Dangerous Humidity: ") + humi2);
+      delay(100);
       //*/
       lastAlertTime = millis();
       }
@@ -238,4 +233,9 @@ void loop()
     {
       digitalWrite(buzzer,LOW);
     }
+  }
+}
+
+void loop() {
+  // Main loop does nothing. Tasks handle all operations.
 }

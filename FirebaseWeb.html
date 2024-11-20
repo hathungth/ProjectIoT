@@ -3,15 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Title of the website-->
     <title>HMS: Health Monitoring System</title>
+    <!-- Favicon, change to your favorite icon if you want-->
     <link rel="icon" href="./Blueheart.png" sizes="32x32" type="image/png" />
+
+<!--Beginning of CSS-->
     <style type="text/css">
+  /*Format for full page of the website*/
       body {
         background-color: #f0f7fe;
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
       }
+      .tab-content {
+        padding: 20px;
+        margin: 0 auto;
+        text-align: justify;
+        max-width: 1200px;
+      }
+
+  /*Format the header (HMS: Health monitoring system) in every tab in the website*/
       .header-container {
         margin: 40px auto;
         width: 100%;
@@ -24,54 +37,85 @@
         align-items: center;
         justify-content: space-between;
       }
+      /*Format the data in the header*/
       .data-head {
         margin: 0;
         font-size: 45px;
         font-weight: bold;
         color: #f0f7fe;
       }
+      /*Format an image in the header*/
       .image-block {
         margin-left: 20px;
       }
-      .image-block img {
-        width: 100px;
-        height: auto;
-      }
+
+  /*Format tabs of the website*/
       .tab {
         margin: 20px auto;
         max-width: 1200px;
         text-align: center;
       }
+      /*Format the tab button (not active)*/
       .tab button {
         padding: 10px 20px;
         margin: 0 5px;
         border: none;
         border-radius: 5px;
-        background-color: #26468f;
-        color: #f0f7fe;
+        background-color: #608BC1;
+        font-weight: bold;
+        color: #133E87;
         cursor: pointer;
         font-size: 18px;
       }
+      /*Format the tab button (active)*/
       .tab button.active {
-        background-color: #6eb7ff;
+        background-color: #CBDCEB;
       }
+      /*Format the tab content*/
       .tab-content {
         display: none;
         margin-top: 20px;
       }
       .tab-content.active {
         display: block;
-      }
-      .data-container {
-        width: 90%;
-        margin: 50px auto;
-        padding: 20px;
-        background-color: #fff;
-        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-        border-radius: 10px;
+        color: #26468f;
       }
 
-      /* Main block for Humidity + Temperature, and SpO2 + Heart Rate */
+  /*Format the warning block in Tab P1 and P2*/
+      .main-data-block-warning {
+        margin: 40px auto;
+        width: 100%;
+        max-width: 900px;
+        display: flex;
+        justify-content: center; /* Center contents horizontally */
+        align-items: center; /* Center contents vertically */
+        padding: 10px;
+        background-color: #f0f7fe;
+        border: 5px solid #384B70;
+        color: #B8001F;
+        font-weight: bold;
+        border-radius: 20px;
+        box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);
+      }
+      /*Format data in the warning block*/
+      .main-data-block.warning-block {
+        display: flex;
+        flex-direction: column; /* Stack items vertically */
+        align-items: center; /* Center each child horizontally */
+        text-align: center; /* Center text inside the block */
+      }
+      .main-data-block-warning h2 {
+        color: #B8001F;
+        font-weight: bold;
+        margin: 0;
+      }
+      .main-data-block-warning p {
+        color: #26468f;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+
+  /*Format the block for displaying parameters: Humidity, Temperature, SpO2, Heart rate*/
       .main-data-block {
         display: flex;
         justify-content: space-between;
@@ -80,10 +124,10 @@
         padding: 10px;
         background-color: #f0f7fe;
         border: 0px solid #6eb7ff;
+        color: #26468f;
         border-radius: 0px;
         box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);
       }
-
       .data-item {
         display: flex;
         justify-content: space-between;
@@ -97,57 +141,52 @@
         box-shadow: 10px 3px 10px rgba(0, 0, 0, 0.1);
         margin: 10px 10px;
       }
-
       .data-content {
         display: flex;
         justify-content: space-between;
         align-items: center;
         width: 80%;
       }
-
       .text-block {
         flex: 1;
         text-align: center;
       }
-
       .image-block {
         margin-left: 0px;
       }
-
       .image-block img {
         width: 70px;
         height: auto;
       }
-
+      /*Format for SpO2, Humidity,...*/
       .data-item h2 {
         font-size: 24px;
         font-weight: bold;
         margin-bottom: 10px;
         color: #26468f;
       }
-
+      /*Format for the number of those*/
       .data-item p {
         font-size: 40px;
         font-weight: bold;
         margin: 0;
         color: #26468f;
       }
-
+      /*Media query limits the following styles to screens with a width <= 768 pixels*/
       @media (max-width: 768px) {
         .data-content {
           flex-direction: column;
           align-items: center;
         }
-
         .image-block {
           margin-top: 10px;
         }
-
         .image-block img {
           width: 60px;
         }
       }
 
+  /*Format the Home, P1, P2 tab*/
       .home-container {
         display: flex;
         justify-content: space-between;
@@ -159,14 +198,12 @@
         box-shadow: 10px 5px 20px rgba(0, 0, 0, 0.1);
         max-width: 1000px;
       }
-
       .home-content {
         flex: 1;
-        color: #000000;
+        color: #26468f;
         font-size: 20px;
         line-height: 1.6;
       }
-
       .home-content p {
         margin: 20px 0;
       }
@@ -175,28 +212,59 @@
         height: auto;
         margin-left: 20px;
       }
-
+      /*Media query limits the following styles to screens with a width <= 768 pixels*/
       @media (max-width: 768px) {
         .home-container {
           flex-direction: column;
           text-align: center;
         }
-
         .home-image img {
           margin: 20px 0;
           width: 200px;
         }
       }
 
-      .tab-content {
-        padding: 20px;
-        margin: 0 auto;
-        text-align: justify;
-        max-width: 1200px;
+  /* Container to position the bubble relative to the block */
+      .clickable-container {
+        position: relative;
+        margin-bottom: 20px;
+        color: #26468f; 
+        font-weight: bold; 
+        cursor: pointer;
+      }
+      .bubble-message {
+        display: none;
+        position: absolute;
+        top: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #CBDCEB;
+        color: #133E87;
+        padding: 10px 15px;
+        border-radius: 10px;
+        font-weight: bold;
+        box-shadow: 10 4px 10px rgba(0, 0, 0, 0.2);
+        white-space: nowrap;
+        position: absolute;
+      }
+      /*Format the exit sign of  the bubble message*/
+      .exit-sign {
+        position: absolute;
+        top: 2px;
+        right: 5px;
+        cursor: pointer;
+        color: #161D6F;
+        font-weight: bold;
+        font-size: 16px;
       }
     </style>
+  <!--End of CSS-->
+
+  <!--Beginning of HTML-->
   </head>
   <body>
+  <!--Content for every page, tab-->
+    <!--header-->
     <div class="header-container">
       <div class="data-head">
         <p>
@@ -208,7 +276,7 @@
         <img src="./HMS.png" alt="Health Monitoring" />
       </div>
     </div>
-
+    <!--Tab-->
     <div class="tab">
       <button class="tablinks active" onclick="openTab(event, 'Home')">
         Home
@@ -217,6 +285,7 @@
       <button class="tablinks" onclick="openTab(event, 'P2')">P2</button>
     </div>
 
+  <!--Home tab-->
     <div id="Home" class="tab-content active">
       <h2>Welcome to the Health Monitoring System</h2>
       <p>
@@ -240,10 +309,41 @@
         <div class="home-image">
           <img src="./home1.png" alt="Health Monitoring" />
         </div>
-      </div>
+      </div>  
+      
+      <h2>Locations of Patients</h2>
+
+      <!--Map-->
+      <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+      <style>
+          #map {
+              height: 400px; /* Adjust as necessary */
+              width: 100%;   /* Adjust as necessary */
+          }
+      </style>
+      <div id="map"></div>
+      <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+      <script>
+        const haDong = [20.9767, 105.7855]; // Coordinates for Ha Dong, Hanoi, Vietnam
+        const cauGiay = [21.036, 105.790];   // Coordinates for Cau Giay, Hanoi, Vietnam
+        // Create the map centered on Ha Dong
+        const map = L.map('map').setView(haDong, 12);        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);        
+        // Add marker for Ha Dong and open its popup
+        const haDongMarker = L.marker(haDong).addTo(map)
+          .bindPopup("<b>P1: Ha Dong, Hanoi, Vietnam</b>")
+          .openPopup(); // Opens the popup immediately        
+        // Add marker for Cau Giay and open its popup
+        const cauGiayMarker = L.marker(cauGiay).addTo(map)
+          .bindPopup("<b>P2: Cau Giay, Hanoi, Vietnam</b>")
+          .openPopup(); // Opens the popup immediately            
+      </script>      
     </div>
 
-    <!-- Patient 1 Tab -->
+  <!-- Patient 1 Tab -->
     <div id="P1" class="tab-content">
       <div class="main-data-block">
         <h2>Name: Nguyen Thi Thu Ha</h2>
@@ -260,32 +360,6 @@
       <div class="main-data-block">
         <h2>Date of discharge:</h2>
       </div>
-
-      <div class="main-data-block">
-        <div class="data-item">
-          <div class="data-content">
-            <div class="text-block">
-              <h2>Temperature</h2>
-              <p class="value" id="temperature">&#8451</p>
-            </div>
-            <div class="image-block">
-              <img src="./Temperature.png" alt="Temperature Image" />
-            </div>
-          </div>
-        </div>
-        <div class="data-item">
-          <div class="data-content">
-            <div class="text-block">
-              <h2>Humidity</h2>
-              <p class="value" id="humidity">%</p>
-            </div>
-            <div class="image-block">
-              <img src="./Humidity.png" alt="Humidity Image" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="main-data-block">
         <h2>Health parameter:</h2>
       </div>
@@ -314,103 +388,188 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Patient 2 Tab -->
-  <div id="P2" class="tab-content">
-    <div class="main-data-block">
-      <h2>Name: Nguyen Thu Phuong</h2>
-    </div>
-    <div class="main-data-block">
-      <h2>Health parameter:</h2>
-    </div>
-    <div class="main-data-block">
-      <h2>Date of birth:</h2>
-    </div>
-    <div class="main-data-block">
-      <h2>Sex:</h2>
-    </div>
-    <div class="main-data-block">
-      <h2>Date of discharge:</h2>
-    </div>
-
-    <div class="main-data-block">
-      <div class="data-item">
-        <div class="data-content">
-          <div class="text-block">
-            <h2>Temperature</h2>
-            <p class="valueP" id="temperatureP2">&#8451</p>
+      <div class="main-data-block">
+        <h2>Environmental parameter:</h2>
+      </div>
+      <div class="main-data-block">
+        <div class="data-item">
+          <div class="data-content">
+            <div class="text-block">
+              <h2>Temperature</h2>
+              <p class="value" id="temperature">&#8451</p>
+            </div>
+            <div class="image-block">
+              <img src="./Temperature.png" alt="Temperature Image" />
+            </div>
           </div>
-          <div class="image-block">
-            <img src="./Temperature.png" alt="Temperature Image" />
+        </div>
+        <div class="data-item">
+          <div class="data-content">
+            <div class="text-block">
+              <h2>Humidity</h2>
+              <p class="value" id="humidity">%</p>
+            </div>
+            <div class="image-block">
+              <img src="./Humidity.png" alt="Humidity Image" />
+            </div>
           </div>
         </div>
       </div>
-      <div class="data-item">
-        <div class="data-content">
-          <div class="text-block">
-            <h2>Humidity</h2>
-            <p class="valueP" id="humidityP2">%</p>
-          </div>
-          <div class="image-block">
-            <img src="./Humidity.png" alt="Humidity Image" />
-          </div>
+
+      <!--SpO2 Warning block-->
+      <div class="main-data-block-warning">
+        <div class="main-data-block warning-block" id="spo2Warning" style="display: none;">
+          <h2>Warning: Unusual SpO₂ Level Detected!</h2>
+          <p>Patient's SpO₂ is not in the safe threshold. Immediate attention may be required.</p>
+          <img src="./warning.png" alt="Temperature Image" style="width: 70px; height: auto;"/>
+        </div>
+      </div>
+
+      <!--Heart rate Warning block-->
+      <div class="main-data-block-warning">
+        <div class="main-data-block warning-block" id="heartrateWarning" style="display: none;">
+          <h2>Warning: Unusual heart rate Level Detected!</h2>
+          <p>Patient's heart rate is not in the safe threshold. Immediate attention may be required.</p>
+          <img src="./warning.png" alt="Temperature Image" style="width: 70px; height: auto;"/>
+        </div>
+      </div>
+      
+      <!-- Medical history P1 -->
+      <div class="clickable-container">
+        <div class="clickable-block" onclick="toggleBubble('bubbleMessageP1')">
+          <h2>Medical history</h2>
+        </div>
+        <div class="bubble-message" id="bubbleMessageP1">
+          <span class="exit-sign" onclick="closeBubble(event, 'bubbleMessageP1')">×</span>
+          In development
         </div>
       </div>
     </div>
 
-    <div class="main-data-block">
-      <h2>Health parameter:</h2>
-    </div>
+  <!-- Patient 2 Tab -->
+    <div id="P2" class="tab-content">
+      <div class="main-data-block">
+        <h2>Name: Nguyen Thu Phuong</h2>
+      </div>
+      <div class="main-data-block">
+        <h2>Health parameter:</h2>
+      </div>
+      <div class="main-data-block">
+        <h2>Date of birth:</h2>
+      </div>
+      <div class="main-data-block">
+        <h2>Sex:</h2>
+      </div>
+      <div class="main-data-block">
+        <h2>Date of discharge:</h2>
+      </div>
+      <div class="main-data-block">
+        <h2>Health parameter:</h2>
+      </div>
 
-    <div class="main-data-block">
-      <div class="data-item">
-        <div class="data-content">
-          <div class="text-block">
-            <h2>SpO2</h2>
-            <p class="valueP" id="spo2P2">%</p>
+      <div class="main-data-block">
+        <div class="data-item">
+          <div class="data-content">
+            <div class="text-block">
+              <h2>SpO2</h2>
+              <p class="valueP" id="spo2P2">%</p>            
+            </div>
+            <div class="image-block">
+              <img src="./spo2.png" alt="SpO2 Image" />
+            </div>
           </div>
-          <div class="image-block">
-            <img src="./spo2.png" alt="SpO2 Image" />
+        </div>
+        <div class="data-item">
+          <div class="data-content">
+            <div class="text-block">
+              <h2>Heart Rate</h2>
+              <p class="valueP" id="heartrateP2"> BPM</p>
+            </div>
+            <div class="image-block">
+              <img src="./Heartrate.png" alt="Heart Rate Image" />
+            </div>
           </div>
         </div>
       </div>
-      <div class="data-item">
-        <div class="data-content">
-          <div class="text-block">
-            <h2>Heart Rate</h2>
-            <p class="valueP" id="heartrateP2"> BPM</p>
+      
+      <div class="main-data-block">
+        <h2>Environmental parameter:</h2>
+      </div>
+      <div class="main-data-block">
+        <div class="data-item">
+          <div class="data-content">
+            <div class="text-block">
+              <h2>Temperature</h2>
+              <p class="valueP" id="temperatureP2">&#8451</p>
+            </div>
+            <div class="image-block">
+              <img src="./Temperature.png" alt="Temperature Image" />
+            </div>
           </div>
-          <div class="image-block">
-            <img src="./Heartrate.png" alt="Heart Rate Image" />
+        </div>
+        <div class="data-item">
+          <div class="data-content">
+            <div class="text-block">
+              <h2>Humidity</h2>
+              <p class="valueP" id="humidityP2">%</p>
+            </div>
+            <div class="image-block">
+              <img src="./Humidity.png" alt="Humidity Image" />
+            </div>
           </div>
         </div>
       </div>
+      
+      <!--SpO2 Warning block-->
+      <div class="main-data-block-warning">
+        <div class="main-data-block warning-block" id="spo2WarningBlockP2" style="display: none;">
+          <h2>Warning: Unusual SpO₂ Level Detected!</h2>
+          <p>Patient's SpO₂ is not in the safe threshold. Immediate attention may be required.</p>
+          <img src="./warning.png" alt="Temperature Image" style="width: 70px; height: auto;"/>
+        </div>
+      </div>
+
+      <!--Heart rate Warning block-->
+      <div class="main-data-block-warning">
+        <div class="main-data-block warning-block" id="heartrateWarningBlockP2" style="display: none;">
+          <h2>Warning: Unusual heart rate Level Detected!</h2>
+          <p>Patient's heart rate is not in the safe threshold. Immediate attention may be required.</p>
+          <img src="./warning.png" alt="Temperature Image" style="width: 70px; height: auto;"/>
+        </div>
+      </div>
+      
+      <!-- Medical History P2 -->
+      <div class="clickable-container">
+        <div class="clickable-block" onclick="toggleBubble('bubbleMessageP2')">
+          <h2>Medical history</h2>
+        </div>
+        <div class="bubble-message" id="bubbleMessageP2">
+          <span class="exit-sign" onclick="closeBubble(event, 'bubbleMessageP2')">×</span>
+          In development
+        </div>
+      </div>    
     </div>
-  </div>
 
-    
-
-    <!-- the scripts for products you want to access must be added-->
-
+  <!-- Version Firebase used-->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-
     <script type="module">
+    
       // Import the functions you need from the SDKs you need
-      import { initializeApp } from "https:";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
 
       // Your web app's Firebase configuration here (Do not use the existing configuration)
       const firebaseConfig = {
-        apiKey: "AI",
-        authDomain: "he",
-        databaseURL:
-          "https:",
-        projectId: "he",
-        storageBucket: "he",
+        apiKey: "",
+        authDomain: "",
+        databaseURL: "",
+        projectId: "",
+        storageBucket: "",
         messagingSenderId: "",
-        appId: "f",
+        appId: "",
       };
 
       // Initialize Firebase
@@ -419,13 +578,13 @@
       // getting reference to the database
       var database = firebase.database();
 
-      //getting reference to the data we want
+      //getting reference to the data we want P1
       var dataRef1 = database.ref("DHTdata/humidity");
       var dataRef2 = database.ref("DHTdata/temperature");
       var dataRef3 = database.ref("Maxdata/spo2");
       var dataRef4 = database.ref("Maxdata/heartrate");
 
-      //fetch the data
+      //fetch the data P1
       dataRef1.on("value", function (getdata1) {
         var humi = getdata1.val();
         document.getElementById("humidity").innerHTML = parseFloat(humi).toFixed(2) + "%";
@@ -439,42 +598,73 @@
       dataRef3.on("value", function (getdata3) {
         var spo2 = getdata3.val();
         document.getElementById("spo2").innerHTML = parseFloat(spo2).toFixed(2) + "%";
+          
+        // Show warning if SpO2 is below 95%
+        if (spo2 < 95 || spo2 > 100) {
+          document.getElementById("spo2Warning").style.display = "block";
+        } else {
+          document.getElementById("spo2Warning").style.display = "none";
+        }
+
       });
 
       dataRef4.on("value", function (getdata4) {
         var heartrate = getdata4.val();
         document.getElementById("heartrate").innerHTML = parseFloat(heartrate).toFixed(2) + " BPM";
+
+        // Show warning if heart rate is under 60 or above 100
+        if (heartrate < 60 || heartrate > 100) {
+          document.getElementById("heartrateWarning").style.display = "block";
+        } else {
+          document.getElementById("heartrateWarning").style.display = "none";
+        }
+
       });
 
       // References for Patient 2
-    var dataRef5 = firebase.database().ref("PhuongDHTdata/humidity");
-    var dataRef6 = firebase.database().ref("PhuongDHTdata/temperature");
-    var dataRef7 = firebase.database().ref("PhuongsensorData/spo2");
-    var dataRef8 = firebase.database().ref("PhuongsensorData/heartRate");
+      var dataRef5 = firebase.database().ref("PhuongDHTdata/humidity");
+      var dataRef6 = firebase.database().ref("PhuongDHTdata/temperature");
+      var dataRef7 = firebase.database().ref("PhuongsensorData/spo2");
+      var dataRef8 = firebase.database().ref("PhuongsensorData/heartRate");
 
-    // Fetch and update for Patient 2
-    dataRef5.on("value", function (getdata5) {
-      var humi = getdata5.val();
-      document.getElementById("humidityP2").innerHTML = parseFloat(humi).toFixed(2) + "%";
-    });
+      // Fetch and update for Patient 2
+      dataRef5.on("value", function (getdata5) {
+        var humi = getdata5.val();
+        document.getElementById("humidityP2").innerHTML = parseFloat(humi).toFixed(2) + "%";
+      });
 
-    dataRef6.on("value", function (getdata6) {
-      var temp = getdata6.val();
-      document.getElementById("temperatureP2").innerHTML = parseFloat(temp).toFixed(2) + "&#8451;";
-    });
+      dataRef6.on("value", function (getdata6) {
+        var temp = getdata6.val();
+        document.getElementById("temperatureP2").innerHTML = parseFloat(temp).toFixed(2) + "&#8451;";
+      });
 
-    dataRef7.on("value", function (getdata7) {
-      var spo2 = getdata7.val();
-      document.getElementById("spo2P2").innerHTML = parseFloat(spo2).toFixed(2) + "%";
-    });
+      dataRef7.on("value", function (getdata7) {
+        var spo2 = getdata7.val();
+        document.getElementById("spo2P2").innerHTML = parseFloat(spo2).toFixed(2) + "%";
 
-    dataRef8.on("value", function (getdata8) {
-      var heartrate = getdata8.val();
-      document.getElementById("heartrateP2").innerHTML = parseFloat(heartrate).toFixed(2) + " BPM";
-    });
+      // Show warning if SpO2 is below 95%
+        if (spo2 < 95 || spo2 > 100) {
+          document.getElementById("spo2WarningBlockP2").style.display = "block";
+        } else {
+        document.getElementById("spo2WarningBlockP2").style.display = "none";
+        }
+      });
+
+      dataRef8.on("value", function (getdata8) {
+        var heartrate = getdata8.val();
+        document.getElementById("heartrateP2").innerHTML = parseFloat(heartrate).toFixed(2) + " BPM";
+
+        // Show warning if heart rate is under 60 or above 100
+        if (heartrate < 60 || heartrate > 100) {
+          document.getElementById("heartrateWarningBlockP2").style.display = "block";
+        } else {
+          document.getElementById("heartrateWarningBlockP2").style.display = "none";
+        }
+      });
       
     </script>
 
+    <!--Switch tabs-->
     <script>
       function openTab(evt, tabName) {
         var i, tabcontent, tablinks;
@@ -488,6 +678,22 @@
         }
         document.getElementById(tabName).classList.add("active");
         evt.currentTarget.classList.add("active");
+      }
+    </script>
+
+    <!--Open the bubble tab and exit sign-->
+    <script>
+      function toggleBubble(elementId) {
+        var element = document.getElementById(elementId);
+        if (element.style.display === "none" || element.style.display === "") {
+          element.style.display = "block";
+        } else {
+          element.style.display = "none";
+        }
+      }
+      function closeBubble(event, elementId) {
+        event.stopPropagation(); // Prevents the toggleBubble function from being called
+        document.getElementById(elementId).style.display = "none";
       }
     </script>
   </body>
